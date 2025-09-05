@@ -1,0 +1,18 @@
+{
+  "name": "dartboard-optimizer",
+  "version": "1.0.0",
+  "description": "Interactive dartboard strategy analyzer",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {}
+}
