@@ -16,9 +16,11 @@ class DartboardApp {
   private xSlider: HTMLInputElement;
   private ySlider: HTMLInputElement;
   private rSlider: HTMLInputElement;
+  private alphaSlider: HTMLInputElement;
   private xValueDisplay: HTMLElement;
   private yValueDisplay: HTMLElement;
   private rValueDisplay: HTMLElement;
+  private alphaValueDisplay: HTMLElement;
   private scoreDisplay: HTMLElement;
   private pointsInRangeDisplay: HTMLElement;
   private heatmapButton: HTMLButtonElement;
@@ -27,6 +29,7 @@ class DartboardApp {
   // State
   private currentTarget = { x: 0, y: 0 };
   private currentRadius = 0.3;
+  private currentAlpha = 0.4;
   private selectedIndices: number[] = [];
   private currentAnalysis: AnalysisResult | null = null;
   private heatmapData: { data: number[][]; bounds: any; maxScore: number } | null = null;
@@ -51,9 +54,11 @@ class DartboardApp {
     this.xSlider = document.getElementById('x-slider') as HTMLInputElement;
     this.ySlider = document.getElementById('y-slider') as HTMLInputElement;
     this.rSlider = document.getElementById('r-slider') as HTMLInputElement;
+    this.alphaSlider = document.getElementById('alpha-slider') as HTMLInputElement;
     this.xValueDisplay = document.getElementById('x-value')!;
     this.yValueDisplay = document.getElementById('y-value')!;
     this.rValueDisplay = document.getElementById('r-value')!;
+    this.alphaValueDisplay = document.getElementById('alpha-value')!;
     this.scoreDisplay = document.getElementById('score-value')!;
     this.pointsInRangeDisplay = document.getElementById('points-in-range')!;
     this.heatmapButton = document.getElementById('toggle-heatmap') as HTMLButtonElement;
@@ -100,8 +105,17 @@ class DartboardApp {
       this.currentRadius = parseFloat(this.rSlider.value);
       this.rValueDisplay.textContent = this.currentRadius.toFixed(2);
       this.updateAnalysis();
-      // Invalidate heatmap when radius changes
-      this.heatmapData = null;
+      
+      // Regenerate heatmap if it's currently shown
+      if (this.showHeatmap && !this.isGeneratingHeatmap) {
+        this.regenerateHeatmap();
+      }
+    });
+
+    this.alphaSlider.addEventListener('input', () => {
+      this.currentAlpha = parseFloat(this.alphaSlider.value);
+      this.alphaValueDisplay.textContent = this.currentAlpha.toFixed(2);
+      this.render(); // Just re-render, no need to recalculate
     });
 
     // Heatmap toggle button
@@ -121,7 +135,7 @@ class DartboardApp {
     try {
       // Generate sunflower pattern (10,000 points)
       console.log('Generating sunflower pattern...');
-      this.points = generateSunflowerPattern(10000, 1.3);
+      this.points = generateSunflowerPattern(20000, 1.3);
       
       // Build spatial index for efficient queries
       console.log('Building spatial index...');
@@ -188,6 +202,14 @@ class DartboardApp {
     this.render();
   }
 
+  private async regenerateHeatmap(): Promise<void> {
+    if (this.isGeneratingHeatmap) return;
+    
+    // Clear existing heatmap data and regenerate
+    this.heatmapData = null;
+    await this.generateHeatmap();
+  }
+
   private async generateHeatmap(): Promise<void> {
     this.isGeneratingHeatmap = true;
     this.heatmapButton.textContent = 'Generating...';
@@ -220,11 +242,14 @@ class DartboardApp {
       };
 
       console.log('Heatmap generated, max score:', maxScore);
+      
+      // Re-render with new heatmap
+      this.render();
     } catch (error) {
       console.error('Error generating heatmap:', error);
     } finally {
       this.isGeneratingHeatmap = false;
-      this.heatmapButton.textContent = 'Hide Heatmap';
+      this.heatmapButton.textContent = this.showHeatmap ? 'Hide Heatmap' : 'Show Heatmap';
       this.heatmapButton.disabled = false;
     }
   }
@@ -238,7 +263,8 @@ class DartboardApp {
       pointColor: '#ffda03',
       selectedPointColor: '#ff6b35',
       targetColor: '#00ff88',
-      dartboardColor: '#silver'
+      dartboardColor: '#A5A9B4',
+      pointAlpha: this.currentAlpha
     };
 
     console.log('Rendering - Heatmap enabled:', this.showHeatmap, 'Data available:', !!this.heatmapData);

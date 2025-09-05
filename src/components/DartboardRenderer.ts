@@ -11,6 +11,7 @@ export interface RenderOptions {
   selectedPointColor: string;
   targetColor: string;
   dartboardColor: string;
+  pointAlpha?: number; // New option for point transparency
 }
 
 export class DartboardRenderer {
@@ -60,7 +61,7 @@ export class DartboardRenderer {
     const segments = getDartSegments(config);
     
     this.ctx.save();
-    this.ctx.strokeStyle = '#silver';
+    this.ctx.strokeStyle = '#A5A9B4';
     this.ctx.lineWidth = 1;
     
     // Draw concentric circles
@@ -85,7 +86,7 @@ export class DartboardRenderer {
     });
     
     // Draw segment numbers
-    this.ctx.fillStyle = '#silver';
+    this.ctx.fillStyle = '#A5A9B4';
     this.ctx.font = '14px Arial';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
@@ -110,7 +111,7 @@ export class DartboardRenderer {
     
     this.ctx.save();
     this.ctx.fillStyle = options.pointColor;
-    this.ctx.globalAlpha = 0.4;
+    this.ctx.globalAlpha = options.pointAlpha || 0.4; // Use custom alpha or default to 0.4
     
     points.forEach(point => {
       const canvasPoint = this.worldToCanvas(point);
@@ -269,7 +270,8 @@ export class DartboardRenderer {
       pointColor: '#ffda03',
       selectedPointColor: '#ff6b35',
       targetColor: '#00ff88',
-      dartboardColor: '#silver'
+      dartboardColor: '#A5A9B4',
+      pointAlpha: 0.4
     }
   ): void {
     // Clear canvas

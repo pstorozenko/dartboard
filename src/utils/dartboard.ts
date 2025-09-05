@@ -12,7 +12,7 @@ export const STANDARD_DARTBOARD: DartboardConfig = {
   doubleStart: 0.95,
   doubleEnd: 1.0,
   // Standard dartboard number sequence (clockwise from top)
-  dartSequence: [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5]
+  dartSequence: [1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5, 20]
 };
 
 /**
