@@ -1,5 +1,5 @@
 import { Point2D, DartboardConfig } from '../types/geometry.js';
-import { getDartSegments, getRingBoundaries, getSegmentAngles } from '../utils/dartboard.js';
+import { getDartSegments, getRingBoundaries } from '../utils/dartboard.js';
 import { polarToCartesian } from '../utils/math.js';
 
 export interface RenderOptions {

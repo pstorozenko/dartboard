@@ -1,6 +1,6 @@
 import { Point2D, DartboardConfig, AnalysisResult } from './types/geometry.js';
 import { generateSunflowerPattern } from './utils/sunflower.js';
-import { STANDARD_DARTBOARD, createRandomDartboard } from './utils/dartboard.js';
+import { STANDARD_DARTBOARD } from './utils/dartboard.js';
 import { SpatialIndex } from './utils/spatial.js';
 import { calculateExpectedScore, generateScoreHeatmap } from './utils/scoring.js';
 import { DartboardRenderer, RenderOptions } from './components/DartboardRenderer.js';

@@ -1,4 +1,4 @@
-import { Point2D, ScoredPoint, AnalysisResult, DartboardConfig } from '../types/geometry.js';
+import { Point2D, AnalysisResult, DartboardConfig } from '../types/geometry.js';
 import { calculateScore } from './dartboard.js';
 import { gaussian } from './math.js';
 import { SpatialIndex } from './spatial.js';
