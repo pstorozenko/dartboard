@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dartboard Optimizer</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         padding: 0;
@@ -13,112 +17,149 @@
         color: white;
         overflow: hidden;
       }
-      
+
       #app {
         display: flex;
+        flex-direction: column;
         height: 100vh;
+        width: 100vw;
       }
-      
+
       #canvas-container {
         flex: 1;
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-height: 0;
+        padding: 10px;
       }
-      
+
       #dartboard-canvas {
         border: 1px solid #333;
         background: #000;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
       }
-      
+
       #controls {
-        width: 300px;
         background: #1a1a1a;
-        padding: 20px;
-        border-left: 1px solid #333;
+        padding: 16px;
+        border-top: 1px solid #333;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 16px;
         overflow-y: auto;
+        max-height: 50vh;
       }
-      
+
+      #controls h2 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
       .control-group {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
       }
-      
+
       .control-group label {
-        font-size: 14px;
+        font-size: 13px;
         color: #ccc;
       }
-      
+
       .slider {
         width: 100%;
-        height: 6px;
-        border-radius: 3px;
+        height: 8px;
+        border-radius: 4px;
         background: #333;
         outline: none;
         -webkit-appearance: none;
       }
-      
+
       .slider::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         background: #ffda03;
         cursor: pointer;
       }
-      
+
       .slider::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         background: #ffda03;
         cursor: pointer;
         border: none;
       }
-      
+
       .value-display {
-        font-size: 12px;
+        font-size: 13px;
         color: #888;
         text-align: right;
+        font-weight: 500;
       }
-      
+
       #score-display {
         background: #2a2a2a;
-        padding: 15px;
+        padding: 16px;
         border-radius: 8px;
         border: 1px solid #333;
       }
-      
+
       #score-display h3 {
-        margin: 0 0 10px 0;
-        font-size: 16px;
+        margin: 0 0 8px 0;
+        font-size: 15px;
         color: #ffda03;
       }
-      
+
+      #score-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffda03;
+        margin-bottom: 8px;
+      }
+
+      #points-in-range {
+        font-size: 13px;
+        color: #aaa;
+      }
+
       #loading {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         color: #ffda03;
-        font-size: 18px;
+        font-size: 16px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 16px 24px;
+        border-radius: 8px;
       }
 
       button {
         background: #333;
         color: white;
         border: 1px solid #555;
-        padding: 12px 16px;
+        padding: 14px 18px;
         border-radius: 6px;
         cursor: pointer;
         font-size: 14px;
         transition: background-color 0.2s;
+        min-height: 44px;
+        font-weight: 500;
       }
 
       button:hover:not(:disabled) {
@@ -129,8 +170,97 @@
         opacity: 0.6;
         cursor: not-allowed;
       }
+
+      .info-text {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.5;
+      }
+
+      .info-text p {
+        margin: 4px 0;
+      }
+
+      /* Tablet and larger */
+      @media (min-width: 768px) {
+        #app {
+          flex-direction: row;
+        }
+
+        #canvas-container {
+          padding: 20px;
+        }
+
+        #controls {
+          width: 320px;
+          max-height: 100vh;
+          border-top: none;
+          border-left: 1px solid #333;
+          padding: 20px;
+          gap: 20px;
+        }
+
+        #controls h2 {
+          font-size: 20px;
+          margin-bottom: 12px;
+        }
+
+        .controls-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .control-group label {
+          font-size: 14px;
+        }
+
+        .value-display {
+          font-size: 14px;
+        }
+
+        #score-display h3 {
+          font-size: 16px;
+        }
+
+        #loading {
+          font-size: 18px;
+        }
+
+        .info-text {
+          font-size: 12px;
+        }
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
+        #controls {
+          width: 360px;
+        }
+      }
+
+      /* Optimize for touch on mobile */
+      @media (hover: none) and (pointer: coarse) {
+        .slider {
+          height: 10px;
+        }
+
+        .slider::-webkit-slider-thumb {
+          width: 28px;
+          height: 28px;
+        }
+
+        .slider::-moz-range-thumb {
+          width: 28px;
+          height: 28px;
+        }
+
+        button {
+          min-height: 48px;
+          padding: 16px 20px;
+        }
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-DkX2cjBM.js"></script>
+    <script type="module" crossorigin src="./assets/index-BdUlxsCM.js"></script>
   </head>
   <body>
     <div id="app">
@@ -141,45 +271,46 @@
       
       <div id="controls">
         <h2>Dartboard Optimizer</h2>
-        
-        <div class="control-group">
-          <label for="x-slider">Target X Position</label>
-          <input type="range" id="x-slider" class="slider" min="-1.3" max="1.3" step="0.01" value="0">
-          <div id="x-value" class="value-display">0.00</div>
+
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="x-slider">Target X Position</label>
+            <input type="range" id="x-slider" class="slider" min="-1.3" max="1.3" step="0.01" value="0">
+            <div id="x-value" class="value-display">0.00</div>
+          </div>
+
+          <div class="control-group">
+            <label for="y-slider">Target Y Position</label>
+            <input type="range" id="y-slider" class="slider" min="-1.3" max="1.3" step="0.01" value="0">
+            <div id="y-value" class="value-display">0.00</div>
+          </div>
+
+          <div class="control-group">
+            <label for="r-slider">Throwing Accuracy (Radius)</label>
+            <input type="range" id="r-slider" class="slider" min="0" max="1.3" step="0.01" value="0.3">
+            <div id="r-value" class="value-display">0.30</div>
+          </div>
+
+          <div class="control-group">
+            <label for="alpha-slider">Point Opacity</label>
+            <input type="range" id="alpha-slider" class="slider" min="0" max="1" step="0.01" value="0.4">
+            <div id="alpha-value" class="value-display">0.40</div>
+          </div>
         </div>
-        
-        <div class="control-group">
-          <label for="y-slider">Target Y Position</label>
-          <input type="range" id="y-slider" class="slider" min="-1.3" max="1.3" step="0.01" value="0">
-          <div id="y-value" class="value-display">0.00</div>
-        </div>
-        
-        <div class="control-group">
-          <label for="r-slider">Throwing Accuracy (Radius)</label>
-          <input type="range" id="r-slider" class="slider" min="0" max="1.3" step="0.01" value="0.3">
-          <div id="r-value" class="value-display">0.30</div>
-        </div>
-        
-        <div class="control-group">
-          <label for="alpha-slider">Point Opacity</label>
-          <input type="range" id="alpha-slider" class="slider" min="0" max="1" step="0.01" value="0.4">
-          <div id="alpha-value" class="value-display">0.40</div>
-        </div>
-        
+
         <div id="score-display">
           <h3>Expected Score</h3>
           <div id="score-value">0</div>
           <div id="points-in-range">Points in range: 0</div>
         </div>
-        
+
         <button id="toggle-heatmap">
           Show Heatmap
         </button>
-        
-        <div style="margin-top: auto; font-size: 12px; color: #666; padding-top: 20px;">
+
+        <div class="info-text">
           <p>Interactive dartboard strategy analyzer</p>
-          <p>Move sliders to explore optimal aiming positions</p>
-          <p>Click on the dartboard to set target position</p>
+          <p>Move sliders or click dartboard to explore</p>
         </div>
       </div>
     </div>

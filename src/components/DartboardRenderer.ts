@@ -21,6 +21,10 @@ export class DartboardRenderer {
   private centerY: number;
   private scale: number;
 
+  // Layer caching
+  private dartboardLayer: HTMLCanvasElement | null = null;
+  private dartboardLayerDirty = true;
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
@@ -28,7 +32,7 @@ export class DartboardRenderer {
       throw new Error('Could not get 2D context from canvas');
     }
     this.ctx = ctx;
-    
+
     // Set up coordinate system
     this.centerX = canvas.width / 2;
     this.centerY = canvas.height / 2;
@@ -54,53 +58,80 @@ export class DartboardRenderer {
   }
 
   /**
+   * Create or get cached dartboard layer
+   */
+  private getDartboardLayer(config: DartboardConfig): HTMLCanvasElement {
+    if (!this.dartboardLayer || this.dartboardLayerDirty) {
+      // Create or recreate layer canvas
+      if (!this.dartboardLayer) {
+        this.dartboardLayer = document.createElement('canvas');
+      }
+
+      this.dartboardLayer.width = this.canvas.width;
+      this.dartboardLayer.height = this.canvas.height;
+
+      const layerCtx = this.dartboardLayer.getContext('2d');
+      if (!layerCtx) {
+        throw new Error('Could not get 2D context for dartboard layer');
+      }
+
+      // Render dartboard to layer
+      const rings = getRingBoundaries(config);
+      const segments = getDartSegments(config);
+
+      layerCtx.save();
+      layerCtx.strokeStyle = '#A5A9B4';
+      layerCtx.lineWidth = 1;
+
+      // Draw concentric circles
+      rings.forEach(radius => {
+        layerCtx.beginPath();
+        layerCtx.arc(this.centerX, this.centerY, radius * this.scale, 0, 2 * Math.PI);
+        layerCtx.stroke();
+      });
+
+      // Draw radial lines for segments
+      segments.forEach(segment => {
+        const startPoint = polarToCartesian({ r: config.bullseyeEnd, theta: segment.startAngle });
+        const endPoint = polarToCartesian({ r: config.doubleEnd, theta: segment.startAngle });
+
+        const canvasStart = this.worldToCanvas(startPoint);
+        const canvasEnd = this.worldToCanvas(endPoint);
+
+        layerCtx.beginPath();
+        layerCtx.moveTo(canvasStart.x, canvasStart.y);
+        layerCtx.lineTo(canvasEnd.x, canvasEnd.y);
+        layerCtx.stroke();
+      });
+
+      // Draw segment numbers
+      layerCtx.fillStyle = '#A5A9B4';
+      layerCtx.font = '14px Arial';
+      layerCtx.textAlign = 'center';
+      layerCtx.textBaseline = 'middle';
+
+      segments.forEach(segment => {
+        const labelRadius = (config.doubleEnd + config.tripleEnd) / 2;
+        const labelAngle = (segment.startAngle + segment.endAngle) / 2;
+        const labelPoint = polarToCartesian({ r: labelRadius, theta: labelAngle });
+        const canvasLabel = this.worldToCanvas(labelPoint);
+
+        layerCtx.fillText(segment.number.toString(), canvasLabel.x, canvasLabel.y);
+      });
+
+      layerCtx.restore();
+      this.dartboardLayerDirty = false;
+    }
+
+    return this.dartboardLayer;
+  }
+
+  /**
    * Render the dartboard structure (rings and segments)
    */
   renderDartboard(config: DartboardConfig): void {
-    const rings = getRingBoundaries(config);
-    const segments = getDartSegments(config);
-    
-    this.ctx.save();
-    this.ctx.strokeStyle = '#A5A9B4';
-    this.ctx.lineWidth = 1;
-    
-    // Draw concentric circles
-    rings.forEach(radius => {
-      this.ctx.beginPath();
-      this.ctx.arc(this.centerX, this.centerY, radius * this.scale, 0, 2 * Math.PI);
-      this.ctx.stroke();
-    });
-    
-    // Draw radial lines for segments
-    segments.forEach(segment => {
-      const startPoint = polarToCartesian({ r: config.bullseyeEnd, theta: segment.startAngle });
-      const endPoint = polarToCartesian({ r: config.doubleEnd, theta: segment.startAngle });
-      
-      const canvasStart = this.worldToCanvas(startPoint);
-      const canvasEnd = this.worldToCanvas(endPoint);
-      
-      this.ctx.beginPath();
-      this.ctx.moveTo(canvasStart.x, canvasStart.y);
-      this.ctx.lineTo(canvasEnd.x, canvasEnd.y);
-      this.ctx.stroke();
-    });
-    
-    // Draw segment numbers
-    this.ctx.fillStyle = '#A5A9B4';
-    this.ctx.font = '14px Arial';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    
-    segments.forEach(segment => {
-      const labelRadius = (config.doubleEnd + config.tripleEnd) / 2;
-      const labelAngle = (segment.startAngle + segment.endAngle) / 2;
-      const labelPoint = polarToCartesian({ r: labelRadius, theta: labelAngle });
-      const canvasLabel = this.worldToCanvas(labelPoint);
-      
-      this.ctx.fillText(segment.number.toString(), canvasLabel.x, canvasLabel.y);
-    });
-    
-    this.ctx.restore();
+    const layer = this.getDartboardLayer(config);
+    this.ctx.drawImage(layer, 0, 0);
   }
 
   /**
@@ -314,5 +345,13 @@ export class DartboardRenderer {
     this.centerX = width / 2;
     this.centerY = height / 2;
     this.scale = Math.min(width, height) / 2.8; // Bigger dartboard
+    this.dartboardLayerDirty = true; // Invalidate cached layer on resize
+  }
+
+  /**
+   * Invalidate cached layers
+   */
+  invalidateCache(): void {
+    this.dartboardLayerDirty = true;
   }
 }

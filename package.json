@@ -10,9 +10,9 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.1",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0"
-  },
-  "dependencies": {}
+  }
 }
